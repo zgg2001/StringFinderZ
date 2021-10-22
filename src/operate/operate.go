@@ -1,6 +1,7 @@
 package operate
 
 import (
+    "github.com/zgg2001/StringFinderZ/detect"
     "github.com/zgg2001/StringFinderZ/argument"
     "log"
     "io/ioutil"
@@ -39,6 +40,7 @@ func OperateFileF(path string) bool {
         log.Printf("\033[31merror : IO error - \033[0m%s", err)
         return false
     }
+    defer file.Close()
 
     //搜索
     var line_number int = 1
@@ -50,7 +52,7 @@ func OperateFileF(path string) bool {
         line := buf.Text()
         if strings.Contains(string(line), argument.Arg.Find) {
             //当此文件为二进制文件时，直接跳过
-            if IsBinary(path) {
+            if detect.DetectFile(path) {
                 fmt.Printf("Binary file \033[35m%s\033[0m matches\n", path)
                 break
             }
@@ -73,16 +75,19 @@ func OperateFileR(path string) bool {
         log.Printf("\033[31merror : IO error - \033[0m%s", err)
         return false
     }
+    defer file.Close()
 
     //替换
     var line_number int = 1
     var state bool = false
     var content string
-    //当此文件为可执行文件时，直接跳过
-    if IsBinary(path) {
-        fmt.Printf("Skip Executable file \033[35m%s\033[0m\n", path)
+    //当此文件为二进制文件时，直接跳过
+    if detect.DetectFile(path) {
+        fmt.Printf("Skip Binary file \033[35m%s\033[0m\n", path)
         return false
     }
+
+    //开始搜索并替换
     buf := bufio.NewScanner(file)
     for {
         if !buf.Scan() {
@@ -129,9 +134,9 @@ func OperateFileQ(path string) bool {
         return false
     }
 
-    //当此文件为可执行文件时，直接跳过
-    if IsBinary(path) {
-        fmt.Printf("Skip Executable file \033[35m%s\033[0m\n", path)
+    //当此文件为二进制文件时，直接跳过
+    if detect.DetectFile(path) {
+        fmt.Printf("Skip Binary file \033[35m%s\033[0m\n", path)
         return false
     }
 
@@ -155,22 +160,3 @@ func IsReplace() bool {
     return false
 }
 
-//简单判断是否为可执行文件
-func IsBinary(path string) bool {
-
-    file_info, err := os.Stat(path)
-    if err != nil {
-        log.Printf("\033[31merror : Stat error - \033[0m%s", err)
-        return false
-    }
-
-    //是否存在可执行权限
-    file_mode := file_info.Mode()
-    perm := file_mode.Perm()
-    flag := perm & os.FileMode(73)
-    if uint32(flag) > 0 {
-        return true
-    }
-
-    return false
-}
