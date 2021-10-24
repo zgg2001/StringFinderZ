@@ -52,7 +52,7 @@ func OperateFileF(path string) bool {
         line := buf.Text()
         if strings.Contains(string(line), argument.Arg.Find) {
             //当此文件为二进制文件时，直接跳过
-            if detect.DetectFile(path) {
+            if detect.DetectBinary(path) {
                 fmt.Printf("Binary file \033[35m%s\033[0m matches\n", path)
                 break
             }
@@ -82,7 +82,7 @@ func OperateFileR(path string) bool {
     var state bool = false
     var content string
     //当此文件为二进制文件时，直接跳过
-    if detect.DetectFile(path) {
+    if detect.DetectBinary(path) {
         fmt.Printf("Skip Binary file \033[35m%s\033[0m\n", path)
         return false
     }
@@ -135,7 +135,7 @@ func OperateFileQ(path string) bool {
     }
 
     //当此文件为二进制文件时，直接跳过
-    if detect.DetectFile(path) {
+    if detect.DetectBinary(path) {
         fmt.Printf("Skip Binary file \033[35m%s\033[0m\n", path)
         return false
     }
