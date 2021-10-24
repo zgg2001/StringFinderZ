@@ -44,6 +44,7 @@ func OperateFileF(path string) bool {
 
     //搜索
     var line_number int = 1
+    var is_binary bool = true //是否为二进制文件 标记为false时会短路if来避免多次判定
     buf := bufio.NewScanner(file)
     for {
         if !buf.Scan() {
@@ -52,10 +53,11 @@ func OperateFileF(path string) bool {
         line := buf.Text()
         if strings.Contains(string(line), argument.Arg.Find) {
             //当此文件为二进制文件时，直接跳过
-            if detect.DetectBinary(path) {
+            if is_binary && detect.DetectBinary(path) {
                 fmt.Printf("Binary file \033[35m%s\033[0m matches\n", path)
                 break
             }
+            is_binary = false //标记为非二进制文件
             if argument.Arg.Number {
                 fmt.Printf("\033[35m%s\033[32m:%d:\033[0m\t%s\n", path, line_number, line)
             } else {
