@@ -6,7 +6,7 @@ import (
     "bufio"
 )
 
-func DetectFile(path string) bool {
+func DetectBinary(path string) bool {
 
     file, err := os.Open(path)
     if err != nil {
@@ -16,18 +16,23 @@ func DetectFile(path string) bool {
     defer file.Close()
 
     r := bufio.NewReader(file)
-    buf := make([]byte, 100)
+    buf := make([]byte, 1024)
     n, err := r.Read(buf)
 
-    //var bad_byte int = 0
+    var white_byte int = 0
     for i := 0; i < n; i++ {
         if (buf[i] >= 0x20 && buf[i] <= 0xff) ||
-            buf[i] == '\n' ||
-            buf[i] == '\t' {
-            continue
+            buf[i] == 9  ||
+            buf[i] == 10 ||
+            buf[i] == 13 {
+            white_byte++
+        } else if buf[i] <= 6 || (buf[i] >= 14 && buf[i] <= 31) {
+            return true
         }
-        return true
     }
 
-    return false
+    if white_byte >= 1 {
+        return false
+    }
+    return true
 }
